@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import com.hmyh.moviecompose.ui.components.InputField
 import com.hmyh.moviecompose.ui.theme.MovieComposeTheme
 import com.hmyh.moviecompose.ui.widget.RoundIconButton
+import com.hmyh.moviecompose.util.calculateTotalTip
 
 class Calculator : ComponentActivity() {
 
@@ -124,8 +125,8 @@ fun TopHeader(totalPerPerson: Double = 0.0) {
 @Composable()
 fun MainContent() {
 
-    BillForm(){billAmt->
-        Log.d("AMT","MainContent: $billAmt")
+    BillForm() { billAmt ->
+        Log.d("AMT", "MainContent: $billAmt")
     }
 
 }
@@ -133,8 +134,10 @@ fun MainContent() {
 
 @Preview
 @Composable
-fun BillForm(modifier: Modifier = Modifier,
-             onValChange: (String)-> Unit = {}){
+fun BillForm(
+    modifier: Modifier = Modifier,
+    onValChange: (String) -> Unit = {}
+) {
 
     val totalBillState = remember {
         mutableStateOf("")
@@ -153,6 +156,10 @@ fun BillForm(modifier: Modifier = Modifier,
     }
 
     val range = IntRange(start = 1, endInclusive = 100)
+
+    val tipAmountState = remember {
+        mutableStateOf(0.0)
+    }
 
 
     Surface(
@@ -178,14 +185,16 @@ fun BillForm(modifier: Modifier = Modifier,
                     if (!validState) return@KeyboardActions
                     onValChange(totalBillState.value.trim())
 
-                  keyboardController?.hide()
+                    keyboardController?.hide()
                 }
             )
 
             //Split
-            Row (
-                modifier = Modifier.fillMaxWidth().padding(8.dp)
-            ){
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
 
                 Box(
                     modifier = Modifier
@@ -203,16 +212,15 @@ fun BillForm(modifier: Modifier = Modifier,
                     modifier = Modifier
                         .weight(1f)
                         .align(Alignment.CenterVertically)
-                ){
+                ) {
 
                     Row {
                         RoundIconButton(
                             imageVector = Icons.Default.Remove,
                             onClick = {
-                                if (splitByState.value >1){
+                                if (splitByState.value > 1) {
                                     splitByState.value -= 1
-                                }
-                                else{
+                                } else {
                                     splitByState.value = 1
                                 }
                             }
@@ -226,7 +234,7 @@ fun BillForm(modifier: Modifier = Modifier,
                         RoundIconButton(
                             imageVector = Icons.Default.Add,
                             onClick = {
-                                if (splitByState.value < range.last){
+                                if (splitByState.value < range.last) {
                                     splitByState.value += 1
                                 }
                             }
@@ -248,11 +256,12 @@ fun BillForm(modifier: Modifier = Modifier,
                     modifier = Modifier
                         .weight(2f)
                         .align(Alignment.CenterVertically)
-                ){
-                    
+                ) {
+
                     Text(
                         text = "Tip",
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
                             .padding(top = 4.dp, bottom = 4.dp)
                     )
 
@@ -262,10 +271,11 @@ fun BillForm(modifier: Modifier = Modifier,
                     modifier = Modifier
                         .weight(1f)
                         .align(Alignment.CenterVertically)
-                ){
+                ) {
                     Text(
-                        text = "$33.00",
-                        modifier = Modifier.fillMaxWidth()
+                        text = "$ ${tipAmountState.value}",
+                        modifier = Modifier
+                            .fillMaxWidth()
                             .padding(top = 4.dp, bottom = 4.dp)
                     )
 
@@ -274,13 +284,15 @@ fun BillForm(modifier: Modifier = Modifier,
             }
 
             Column(
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
                 Text(
-                    text = "33%"
+                    text = "$${(sliderPositionState.value * 100).toInt()} %"
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -288,7 +300,16 @@ fun BillForm(modifier: Modifier = Modifier,
                     value = sliderPositionState.value,
                     onValueChange = {
                         sliderPositionState.value = it
-                        Log.d("slider","BillForm: ${sliderPositionState.value}")
+                        Log.d("sliderValue",sliderPositionState.value.toString())
+
+                        val updatedTipPercentage = (sliderPositionState.value * 100).toInt()
+
+                        tipAmountState.value =
+                            calculateTotalTip(
+                                totalBill = totalBillState.value.toDoubleOrNull(),
+                                tipPercentage = updatedTipPercentage
+                            ) ?: 0.0.toDouble()
+
                     },
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     steps = 5
