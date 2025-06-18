@@ -52,7 +52,7 @@ class CounterCompose: ComponentActivity() {
 }
 
 @Composable
-fun MyApp(innerPadding: PaddingValues){
+private fun MyApp(innerPadding: PaddingValues){
 
     var moneyCounter = remember{
         mutableStateOf(0)
@@ -85,7 +85,7 @@ fun MyApp(innerPadding: PaddingValues){
 
 
 @Composable()
-fun CreateCircle(moneyCounter: Int = 0,updateMoneyCounter: (Int)->Unit){
+private fun CreateCircle(moneyCounter: Int = 0,updateMoneyCounter: (Int)->Unit){
 
     Card (
         modifier = Modifier
@@ -113,7 +113,7 @@ fun CreateCircle(moneyCounter: Int = 0,updateMoneyCounter: (Int)->Unit){
 
 @Preview
 @Composable
-fun Preview(){
+private fun Preview(){
     MovieComposeTheme {
         MyApp(innerPadding = PaddingValues(0.dp))
     }
