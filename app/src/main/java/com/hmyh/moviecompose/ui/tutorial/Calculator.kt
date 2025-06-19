@@ -31,8 +31,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import com.hmyh.moviecompose.ui.components.InputField
 import com.hmyh.moviecompose.ui.theme.MovieComposeTheme
 import com.hmyh.moviecompose.ui.widget.RoundIconButton
+import com.hmyh.moviecompose.util.calculateTotalPerPerson
 import com.hmyh.moviecompose.util.calculateTotalTip
 
 class Calculator : ComponentActivity() {
@@ -70,6 +74,9 @@ class Calculator : ComponentActivity() {
 
 @Composable
 private fun Calculator(innerPadding: PaddingValues) {
+
+    val totalPerPersonState = remember { mutableStateOf(0.0) }
+
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -80,9 +87,9 @@ private fun Calculator(innerPadding: PaddingValues) {
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            TopHeader()
+            TopHeader(totalPerPerson = totalPerPersonState.value)
             Spacer(modifier = Modifier.height(8.dp))
-            MainContent()
+            MainContent(totalPerPersonState = totalPerPersonState)
         }
     }
 
@@ -123,9 +130,11 @@ fun TopHeader(totalPerPerson: Double = 0.0) {
 }
 
 @Composable()
-fun MainContent() {
+fun MainContent(totalPerPersonState: MutableState<Double>) {
 
-    BillForm() { billAmt ->
+    BillForm(
+        totalPerPersonState = totalPerPersonState
+    ) { billAmt ->
         Log.d("AMT", "MainContent: $billAmt")
     }
 
@@ -136,6 +145,7 @@ fun MainContent() {
 @Composable
 fun BillForm(
     modifier: Modifier = Modifier,
+    totalPerPersonState: MutableState<Double>?=null,
     onValChange: (String) -> Unit = {}
 ) {
 
@@ -161,6 +171,7 @@ fun BillForm(
         mutableStateOf(0.0)
     }
 
+    var updatedTipPercentage by remember{ mutableStateOf(0) }
 
     Surface(
         modifier = Modifier
@@ -223,6 +234,13 @@ fun BillForm(
                                 } else {
                                     splitByState.value = 1
                                 }
+
+                                totalPerPersonState?.value =
+                                    calculateTotalPerPerson(
+                                        totalBill = totalBillState.value.toDouble(),
+                                        splitBy = splitByState.value,
+                                        tipPercentage = updatedTipPercentage
+                                    )
                             }
                         )
                         Text(
@@ -237,6 +255,13 @@ fun BillForm(
                                 if (splitByState.value < range.last) {
                                     splitByState.value += 1
                                 }
+
+                                totalPerPersonState?.value =
+                                    calculateTotalPerPerson(
+                                        totalBill = totalBillState.value.toDouble(),
+                                        splitBy = splitByState.value,
+                                        tipPercentage = updatedTipPercentage
+                                    )
                             }
                         )
                     }
@@ -302,13 +327,20 @@ fun BillForm(
                         sliderPositionState.value = it
                         Log.d("sliderValue",sliderPositionState.value.toString())
 
-                        val updatedTipPercentage = (sliderPositionState.value * 100).toInt()
+                        updatedTipPercentage = (sliderPositionState.value * 100).toInt()
 
                         tipAmountState.value =
                             calculateTotalTip(
                                 totalBill = totalBillState.value.toDoubleOrNull(),
                                 tipPercentage = updatedTipPercentage
                             ) ?: 0.0.toDouble()
+
+                        totalPerPersonState?.value =
+                            calculateTotalPerPerson(
+                                totalBill = totalBillState.value.toDouble(),
+                                splitBy = splitByState.value,
+                                tipPercentage = updatedTipPercentage
+                            )
 
                     },
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
