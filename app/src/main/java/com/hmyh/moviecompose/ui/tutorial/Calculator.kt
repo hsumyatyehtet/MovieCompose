@@ -77,6 +77,14 @@ private fun Calculator(innerPadding: PaddingValues) {
 
     val totalPerPersonState = remember { mutableStateOf(0.0) }
 
+    val splitByState = remember {
+        mutableStateOf(1)
+    }
+
+    val tipAmountState = remember {
+        mutableStateOf(0.0)
+    }
+
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -89,7 +97,11 @@ private fun Calculator(innerPadding: PaddingValues) {
         ) {
             TopHeader(totalPerPerson = totalPerPersonState.value)
             Spacer(modifier = Modifier.height(8.dp))
-            MainContent(totalPerPersonState = totalPerPersonState)
+            MainContent(
+                splitByState = splitByState,
+                tipAmountState = tipAmountState,
+                totalPerPersonState = totalPerPersonState
+            )
         }
     }
 
@@ -130,9 +142,16 @@ fun TopHeader(totalPerPerson: Double = 0.0) {
 }
 
 @Composable()
-fun MainContent(totalPerPersonState: MutableState<Double>) {
+fun MainContent(
+    splitByState: MutableState<Int>,
+    tipAmountState: MutableState<Double>,
+    totalPerPersonState: MutableState<Double>
+) {
 
     BillForm(
+        modifier = Modifier,
+        splitByState = splitByState,
+        tipAmountState = tipAmountState,
         totalPerPersonState = totalPerPersonState
     ) { billAmt ->
         Log.d("AMT", "MainContent: $billAmt")
@@ -141,11 +160,13 @@ fun MainContent(totalPerPersonState: MutableState<Double>) {
 }
 
 
-@Preview
 @Composable
 fun BillForm(
     modifier: Modifier = Modifier,
-    totalPerPersonState: MutableState<Double>? = null,
+    range: IntRange = 1..100,
+    splitByState: MutableState<Int>,
+    tipAmountState: MutableState<Double>,
+    totalPerPersonState: MutableState<Double>,
     onValChange: (String) -> Unit = {}
 ) {
 
@@ -161,27 +182,17 @@ fun BillForm(
         mutableStateOf(0f)
     }
 
-    val splitByState = remember {
-        mutableStateOf(1)
-    }
-
-    val range = IntRange(start = 1, endInclusive = 100)
-
-    val tipAmountState = remember {
-        mutableStateOf(0.0)
-    }
-
     var updatedTipPercentage by remember { mutableStateOf(0) }
 
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clip(shape = RoundedCornerShape(corner = CornerSize(8.dp))),
         border = BorderStroke(1.dp, Color.LightGray)
     ) {
 
         Column(
-            modifier = Modifier.padding(8.dp),
+            modifier = modifier.padding(8.dp),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
@@ -204,13 +215,13 @@ fun BillForm(
 
                 //Split
                 Row(
-                    modifier = Modifier
+                    modifier = modifier
                         .fillMaxWidth()
                         .padding(8.dp)
                 ) {
 
                     Box(
-                        modifier = Modifier
+                        modifier = modifier
                             .weight(1f)
                             .align(Alignment.CenterVertically)
                     ) {
@@ -222,7 +233,7 @@ fun BillForm(
 
                     }
                     Box(
-                        modifier = Modifier
+                        modifier = modifier
                             .weight(1f)
                             .align(Alignment.CenterVertically)
                     ) {
@@ -232,12 +243,12 @@ fun BillForm(
                                 imageVector = Icons.Default.Remove,
                                 onClick = {
                                     if (splitByState.value > 1) {
-                                        splitByState.value -= 1
+                                        splitByState.value = splitByState.value - 1
                                     } else {
                                         splitByState.value = 1
                                     }
 
-                                    totalPerPersonState?.value =
+                                    totalPerPersonState.value =
                                         calculateTotalPerPerson(
                                             totalBill = totalBillState.value.toDouble(),
                                             splitBy = splitByState.value,
@@ -247,7 +258,7 @@ fun BillForm(
                             )
                             Text(
                                 text = "${splitByState.value}",
-                                modifier = Modifier
+                                modifier = modifier
                                     .align(Alignment.CenterVertically)
                                     .padding(start = 8.dp, end = 8.dp)
                             )
@@ -258,7 +269,7 @@ fun BillForm(
                                         splitByState.value += 1
                                     }
 
-                                    totalPerPersonState?.value =
+                                    totalPerPersonState.value =
                                         calculateTotalPerPerson(
                                             totalBill = totalBillState.value.toDouble(),
                                             splitBy = splitByState.value,
@@ -274,20 +285,20 @@ fun BillForm(
 
                 //Tip
                 Row(
-                    modifier = Modifier
+                    modifier = modifier
                         .fillMaxWidth()
                         .padding(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 4.dp)
                 ) {
 
                     Box(
-                        modifier = Modifier
+                        modifier = modifier
                             .weight(2f)
                             .align(Alignment.CenterVertically)
                     ) {
 
                         Text(
                             text = "Tip",
-                            modifier = Modifier
+                            modifier = modifier
                                 .fillMaxWidth()
                                 .padding(top = 4.dp, bottom = 4.dp)
                         )
@@ -295,13 +306,13 @@ fun BillForm(
                     }
 
                     Box(
-                        modifier = Modifier
+                        modifier = modifier
                             .weight(1f)
                             .align(Alignment.CenterVertically)
                     ) {
                         Text(
                             text = "$ ${tipAmountState.value}",
-                            modifier = Modifier
+                            modifier = modifier
                                 .fillMaxWidth()
                                 .padding(top = 4.dp, bottom = 4.dp)
                         )
@@ -311,7 +322,7 @@ fun BillForm(
                 }
 
                 Column(
-                    modifier = Modifier
+                    modifier = modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp),
                     verticalArrangement = Arrangement.Center,
@@ -347,15 +358,14 @@ fun BillForm(
                                 )
 
                         },
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        modifier = modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         steps = 5
                     )
 
                 }
 
-            }
-            else{
-                Box(){
+            } else {
+                Box() {
 
                 }
             }
