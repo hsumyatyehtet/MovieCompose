@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.hmyh.moviecompose.ui.navagation.MovieScreens
 
 @Composable
 fun HomeScreen(navController: NavController){
@@ -81,7 +82,7 @@ fun MainContent(
             items(movieList) {
                 MovieRow(movie = it) { movie ->
                     Log.d("TAG", "$movie")
-
+                    navController.navigate(route = MovieScreens.DetailScreen.name)
                 }
 
             }
