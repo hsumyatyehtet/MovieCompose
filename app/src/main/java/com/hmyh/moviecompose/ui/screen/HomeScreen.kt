@@ -26,6 +26,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,8 +44,9 @@ fun HomeScreen(navController: NavController){
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Magenta
-                ),
+                    containerColor = Color.Transparent,
+
+                    ),
                 title = {
                     Text(text = "Movie")
                 }
@@ -82,7 +84,7 @@ fun MainContent(
             items(movieList) {
                 MovieRow(movie = it) { movie ->
                     Log.d("TAG", "$movie")
-                    navController.navigate(route = MovieScreens.DetailScreen.name)
+                    navController.navigate(route = MovieScreens.DetailScreen.name+"/$movie")
                 }
 
             }

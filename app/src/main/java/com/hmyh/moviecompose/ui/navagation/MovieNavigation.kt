@@ -1,9 +1,11 @@
 package com.hmyh.moviecompose.ui.navagation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.hmyh.moviecompose.ui.screen.DetailsScreen
 import com.hmyh.moviecompose.ui.screen.HomeScreen
 
@@ -15,8 +17,10 @@ fun MovieNavigation(){
         composable(MovieScreens.HomeScreen.name) {
             HomeScreen(navController)
         }
-        composable(MovieScreens.DetailScreen.name) {
-            DetailsScreen(navController)
+        composable(MovieScreens.DetailScreen.name+"/{movie}",
+            arguments = listOf(navArgument(name = "movie"){type = NavType.StringType})
+        ) {backStackEntry->
+            DetailsScreen(navController,backStackEntry.arguments?.getString("movie"))
         }
     }
 }
